@@ -3,6 +3,7 @@ import Filter from './Filter'
 import PersonForm from './PersonForm'
 import Persons from './Persons'
 import axios from 'axios'
+import personService from './services/person'
 
 
 
@@ -15,8 +16,8 @@ const App = () => {
 
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
+    personService
+    .getAll()
       .then(response => {
         console.log('promise fulfilled')
         setPersons(response.data)
@@ -36,14 +37,18 @@ const App = () => {
     const nameObject = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1
     }
 
-    setPersons(persons.concat(nameObject))
-    setNewName('')
-    setNewNumber('')
+    
 
+    personService.create(nameObject).then(response => {
+      setPersons(persons.concat(response.data))
+      setNewName('')
+      setNewNumber('')
+    })
   }
+
+  
 
   //create addFilter + add handleFilterChange
   const addFilter = (event) => {
@@ -71,6 +76,11 @@ const App = () => {
     addFilter(event)
   }
 
+  const handleDelete = async (idToDelete) => {
+    personService.deleteObject(idToDelete).then(response => {
+      console.log('person deleted')
+      setPersons(persons => persons.filter(person => person.id !== idToDelete))})
+  }
   return (
     <div>
       <h2>Phonebook</h2>
@@ -79,7 +89,7 @@ const App = () => {
       <PersonForm name = {newName} submit = {addPerson} handleNameChange ={handleNameChange}
       number = {newNumber} handleNumberChange = {handleNumberChange}></PersonForm>
       <h2>Numbers</h2>
-      <Persons persons = {personsToShow}></Persons>
+      <Persons onDelete={handleDelete} persons = {personsToShow}></Persons>
      </div>
   )
 }
