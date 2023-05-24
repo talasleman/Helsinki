@@ -4,6 +4,7 @@ import PersonForm from './PersonForm'
 import Persons from './Persons'
 import axios from 'axios'
 import personService from './services/person'
+import Notification from './Notification'
 
 
 
@@ -13,6 +14,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [confirmationMessage, setConfirmationMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     console.log('effect')
@@ -41,7 +44,6 @@ const App = () => {
           if (confirmUpdate)
           {
             personService.update(personToUpdate.id, nameObject).then(response => {
-            console.log(response.data)
             setPersons(persons.map(person => {
               if (person.id === personToUpdate.id)
               {
@@ -52,9 +54,17 @@ const App = () => {
                 return person
               }
             }))
-            console.log(personToUpdate.id)
+            setConfirmationMessage(`Change the phone number for ${newName}`)
+            setTimeout(() => {
+              setConfirmationMessage(null)
+            }, 5000)
             setNewName('')
             setNewNumber('')
+          }).catch(error => {
+            setErrorMessage(`Information of ${newName} has already been removed from the server`)
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           })
           }
           
@@ -64,6 +74,10 @@ const App = () => {
 
     personService.create(nameObject).then(response => {
       setPersons(persons.concat(response.data))
+      setConfirmationMessage(`Added ${newName}`)
+            setTimeout(() => {
+              setConfirmationMessage(null)
+            }, 5000)
       setNewName('')
       setNewNumber('')
     })
@@ -102,9 +116,12 @@ const App = () => {
       console.log('person deleted')
       setPersons(persons => persons.filter(person => person.id !== idToDelete))})
   }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification.ConfirmationNotification message = {confirmationMessage}></Notification.ConfirmationNotification>
+      <Notification.ErrorNotification message = {errorMessage}></Notification.ErrorNotification>
       <Filter filter = {newFilter} handleFilterChange = {handleFilterChange}></Filter>
       <h2>add new</h2>
       <PersonForm name = {newName} submit = {addPerson} handleNameChange ={handleNameChange}
