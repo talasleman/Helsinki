@@ -30,7 +30,6 @@ const App = () => {
 
   return (
     <div>
-      {currentCountries.length}
       <Filter filter={newFilter} handleFilterChange={handleFilterChange}></Filter>
       <CountriesData countries={currentCountries}></CountriesData>
     </div>

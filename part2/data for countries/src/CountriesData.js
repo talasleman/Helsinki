@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import countriesService from './services/countries'
 
 const CountriesData = (props) => {
     const [showIndex, setShowIndex] = useState(-1)
+    const [weather, setWeather] = useState('')
 
+    useEffect(() => {
+        setShowIndex(-1)
+    }, [props.countries])
     if (props.countries.length > 10)
     {
         return (
@@ -14,8 +19,7 @@ const CountriesData = (props) => {
         return (
             <div>
                 {props.countries.map((country,index) => <div key ={index}>
-                    {country.name.common}
-                    <button onClick ={() => {setShowIndex(index)}}>show</button>
+                    <h3>{country.name.common}<button onClick ={() => {setShowIndex(index)}}>show</button></h3>
                     {showIndex === index && <CountriesData countries={[country]} />}
                     </div>)}
                 
@@ -25,16 +29,33 @@ const CountriesData = (props) => {
     if (props.countries.length === 1)
     {
         const country = props.countries[0]
+        const latlng = props.countries[0].capitalInfo.latlng
+        countriesService.getWeather({latlng}).then(response => 
+            
+            setWeather({
+            'temp' : (response.data.main.temp - 273.15).toFixed(2),
+            'icon' : (response.data.weather[0].icon),
+            'wind' : (response.data.wind.speed)
+
+        }))
+        const iconUrl = `http://openweathermap.org/img/w/${weather.icon}.png`
         
         return (
-            <div>
+            <div className='data'>
                 <h1>{country.name.common} {country.flag}</h1>
-                <div>{country.capital}</div>
-                <div>{country.region}</div>
-                <p>languages:</p>
+                <div>Capital : {country.capital}</div>
+                <div>Region : {country.region}</div>
+                <p>Languages:</p>
                 
                 <div>
                     {Object.values(country.languages).map((lang, index) => <li key={index}>{lang}</li>)}
+                </div>
+                <h1>Weather in {country.capital}</h1>
+                <div>
+                    <p>Temperature : {weather.temp} celsius</p>
+                    <p>{weather.icon && <img src={iconUrl}></img>}
+                        </p>
+                    <p>Wind speed : {weather.wind}</p>
                 </div>
                 
 
