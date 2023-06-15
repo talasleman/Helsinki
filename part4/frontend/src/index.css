@@ -1,0 +1,10 @@
+body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.posts {
+    border-style: double;
+    border-width: 0.2cm;
+    width: 500px; 
+    padding-left: 2%;
+}
