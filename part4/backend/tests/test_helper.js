@@ -1,40 +1,37 @@
 const listHelper = require('../utils/list_helper')
+const Blog = require('../models/blog')
 
-describe('likes', () => {
-  const list = [
+  const initialBlogs = [
     {
-      _id: '5a422aa71b54a676234d17f8',
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
-    },
-    {
-      _id: '5a422aa71b54a676234437f8',
+      
       title: 'Get Rich',
       author: 'Sarah Mansfield',
       url: 'http://www.Richers.html',
       likes: 10,
-      __v: 0
+      id: '5a422aa71b54a676234437f8'
     },
     {
-      _id: '5a422aa71b54a67623sw17f8',
+      
       title: 'All in',
       author: 'Alain Brandy',
       url: 'http://www.GetItRight.html',
       likes: 3,
-      __v: 0
+      id: '5a422aa71b54a67623sw17f8'
     },
     {
-      _id: '5a422aa71b54a67623sw17f7',
+      
       title: 'How I changed my Body',
       author: 'Alain Brandy',
       url: 'http://www.GetItRight.html',
       likes: 2,
-      __v: 0
+      id: '5a422aa71b54a67623sw17f7'
     }
   ]
+
+  const blogsInDb = async () => {
+    const blogs = await Blog.find({})
+    return blogs.map(blog => blog.toJSON())
+  }
 
   test('total amount of likes in all the blog posts', () => {
     const result = listHelper.totalLikes(list)
@@ -56,4 +53,5 @@ describe('likes', () => {
     const result = listHelper.mostLikes(list)
     expect(result).toEqual({author : 'Sarah Mansfield', likes : 10})
   })
-})
+
+module.exports = { initialBlogs, blogsInDb }
