@@ -35,6 +35,7 @@ const App = () => {
       name: newName,
       number: newNumber,
     }
+    
     let personToUpdate = persons.find(person => person[key] === value)
     
     if (personToUpdate)
@@ -79,7 +80,20 @@ const App = () => {
             }, 5000)
       setNewName('')
       setNewNumber('')
-    })
+    }).catch(
+      error => {
+        // Make sure the error response exists and has data
+        if(error.response && error.response.data && error.response.data.error) {
+          const errorMessage = error.response.data.error;
+    
+          setErrorMessage(errorMessage)
+          setTimeout(() => {
+              setErrorMessage(null)
+          }, 5000)
+        }
+      }
+    )
+    
   }
 
   

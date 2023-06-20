@@ -4,10 +4,27 @@ import countriesService from './services/countries'
 const CountriesData = (props) => {
     const [showIndex, setShowIndex] = useState(-1)
     const [weather, setWeather] = useState('')
+    const [country, setCountry] = useState(null)
 
     useEffect(() => {
         setShowIndex(-1)
     }, [props.countries])
+
+    useEffect(() => {
+        if (props.countries.length === 1) {
+            const currentCountry = props.countries[0]
+            setCountry(currentCountry)
+            const latlng = currentCountry.capitalInfo.latlng
+            countriesService.getWeather({latlng}).then(response => 
+                setWeather({
+                    'temp' : (response.data.main.temp - 273.15).toFixed(2),
+                    'icon' : (response.data.weather[0].icon),
+                    'wind' : (response.data.wind.speed)
+                })
+            )
+        }
+    }, [props.countries])
+
     if (props.countries.length > 10)
     {
         return (
@@ -26,18 +43,9 @@ const CountriesData = (props) => {
             </div>
         )
     }
-    if (props.countries.length === 1)
+    if (country && weather)
     {
-        const country = props.countries[0]
-        const latlng = props.countries[0].capitalInfo.latlng
-        countriesService.getWeather({latlng}).then(response => 
-            
-            setWeather({
-            'temp' : (response.data.main.temp - 273.15).toFixed(2),
-            'icon' : (response.data.weather[0].icon),
-            'wind' : (response.data.wind.speed)
 
-        }))
         const iconUrl = `http://openweathermap.org/img/w/${weather.icon}.png`
         
         return (
