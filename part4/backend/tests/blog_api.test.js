@@ -3,12 +3,25 @@ const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
 const helper = require('./test_helper')
-
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 const api = supertest(app)
+
+const loginUser = async (username, password) => {
+    const response = await api
+    .post('/api/login')
+    .send({username, password})
+    .expect(200)
+    return response.body.token
+  }
 
 beforeEach(async () => {
     await Blog.deleteMany({})
-  
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', passwordHash })
+    await user.save()
+
     const blogObjects = helper.initialBlogs
       .map(blog => new Blog(blog))
     const promiseArray = blogObjects.map(blog => blog.save())
@@ -36,6 +49,9 @@ test('the unique identifier property of blog posts is id', async () => {
 })
 
 test('a valid blog can be added', async () => {
+
+    const token = await loginUser('root', 'sekret')
+
     const newBlog = {
         title: 'Go To Statement Considered Harmful',
         author: 'Edsger W. Dijkstra',
@@ -45,6 +61,7 @@ test('a valid blog can be added', async () => {
   
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -61,6 +78,8 @@ test('a valid blog can be added', async () => {
 
 
 test('if a new blog has no likes defined, it becomes 0 likes by default', async () => {
+    const token = await loginUser('root', 'sekret')
+
     const newBlog = {
         title: 'Go To Statement Considered Harmful',
         author: 'Edsger W. Dijkstra',
@@ -69,6 +88,7 @@ test('if a new blog has no likes defined, it becomes 0 likes by default', async 
     
     const response = await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -78,6 +98,8 @@ test('if a new blog has no likes defined, it becomes 0 likes by default', async 
 })
 
 test('if a new blog has no url or title, error is thrown and blog is not created', async () => {
+    const token = await loginUser('root', 'sekret')
+
     const newBlog = {
         author: 'Edsger W. Dijkstra',
         url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html'
@@ -85,24 +107,31 @@ test('if a new blog has no url or title, error is thrown and blog is not created
 
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
     
 })
 
 test('a blog can be deleted', async () => {
-
+    const token = await loginUser('root', 'sekret')
     const newBlog = {
         title: 'Go To Statement Considered Harmful',
         author: 'Edsger W. Dijkstra',
         url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html'
     }
-    const response = await api.post('/api/blogs').send(newBlog).expect(201)
+    const response = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
+    .expect(201)
+
     const createdBlogId = response.body.id
 
 
     await api
     .delete(`/api/blogs/${createdBlogId}`)
+    .set('Authorization', `Bearer ${token}`)
     .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -111,13 +140,19 @@ test('a blog can be deleted', async () => {
 })
 
 test('a blog can be updated', async () => {
+    const token = await loginUser('root', 'sekret')
     const newBlog = {
         title: 'Go To Statement Considered Harmful',
         author: 'Edsger W. Dijkstra',
         url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
         likes: 1
     }
-    const response_post = await api.post('/api/blogs').send(newBlog).expect(201)
+    const response_post = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
+    .expect(201)
+    
     const createdBlogId = response_post.body.id
 
     const updatedBlog = {

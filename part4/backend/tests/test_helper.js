@@ -1,5 +1,6 @@
 const listHelper = require('../utils/list_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
   const initialBlogs = [
     {
@@ -33,6 +34,11 @@ const Blog = require('../models/blog')
     return blogs.map(blog => blog.toJSON())
   }
 
+  const usersInDb = async () => {
+    const users = await User.find({})
+    return users.map(u => u.toJSON())
+  }
+
   test('total amount of likes in all the blog posts', () => {
     const result = listHelper.totalLikes(list)
     expect(result).toBe(20)
@@ -54,4 +60,12 @@ const Blog = require('../models/blog')
     expect(result).toEqual({author : 'Sarah Mansfield', likes : 10})
   })
 
-module.exports = { initialBlogs, blogsInDb }
+  const loginUser = async (username, password) => {
+    const response = await api
+    .post('/api/login')
+    .send({username, password})
+    .expect(200)
+    return response.body.token
+  }
+
+module.exports = { initialBlogs, blogsInDb, usersInDb, loginUser }
